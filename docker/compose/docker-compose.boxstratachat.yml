@@ -1,0 +1,42 @@
+# BoxStrataChat preset: Strata serving Qwen3.8-Flash-Next (ISTA-DASLab IQ3_XXS) on an NVIDIA card, the same settings the
+# BoxPilot catalog manifest (boxpilot/strata.yaml) uses. For a computer that is not a Box; on a Box, install it from the catalog.
+#
+#   cp .env.example .env                                  # optional: MODEL, API_KEY, STRATA_BIND, STRATA_PORT
+#   docker compose -f docker-compose.boxstratachat.yml up -d
+#   docker compose -f docker-compose.boxstratachat.yml logs -f      # the first start downloads the model (about 47 GB, resumable)
+#
+# Image: upstream's cuda13 image (RTX 20 to 50, driver 580 or newer) until this fork's own images are public; then
+# STRATA_IMAGE=ghcr.io/aes256afro/boxstratachat:<version>-cuda13. Needs the NVIDIA Container Toolkit on the host.
+services:
+  strata:
+    image: ${STRATA_IMAGE:-ghcr.io/niko1221/strata:0.2.12-cuda13}
+    container_name: strata
+    restart: unless-stopped
+    ports:
+      - "${STRATA_BIND:-127.0.0.1}:${STRATA_PORT:-8111}:8080"      # 127.0.0.1 = this computer only. 0.0.0.0 = your network: keep the API key then.
+    environment:
+      FAMILY: ${FAMILY:-qwen}                # qwen = the ISTA-DASLab Qwen3.8-Flash-Next originals; unsloth, gyro, coder are the other packs
+      MODEL: ${MODEL:-IQ3_XXS}               # Q2_0 (37.6 GB) · IQ2_XS (39.2 GB) · IQ3_XXS (47 GB) · IQ3_S (54.8 GB), RAM plus VRAM
+      MODEL_PATH: ${MODEL_PATH:-}            # GGUF files you already have, as seen inside the container (mount them below)
+      CONTEXT: ${CONTEXT:-32k}
+      PARALLEL: ${PARALLEL:-1}
+      VISION: ${VISION:-off}                 # on: the model reads pictures (about 0.9 GB more to download)
+      TUNE: ${TUNE:-skip}                    # quick: up to about 20 minutes, once, then kept
+      API_KEY: ${API_KEY:-}                  # empty: made on the first start; docker exec strata strata launch --show-key --preset boxpilot
+      PRESET: boxpilot
+    volumes:
+      - strata-data:/data                    # the model, presets, tuning, the key. Survives updates of the image.
+      # - /srv/strata-models:/models:ro      # GGUF files you already have (then also set MODEL_PATH: /models)
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    ulimits:
+      memlock: { soft: -1, hard: -1 }        # the engine pins tens of GB of RAM
+    shm_size: 2gb
+    stop_grace_period: 2m                    # the model drains and unloads on docker stop
+volumes:
+  strata-data:

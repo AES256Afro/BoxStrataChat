@@ -1,3 +1,8 @@
+> **BoxStrataChat** is [AES256Afro's fork of Strata](https://github.com/AES256Afro/BoxStrataChat), packaged so Strata can be
+> installed from the [BoxPilot](https://github.com/AES256Afro/BoxPilot) app catalog with **Qwen3.8-Flash-Next** as the default model.
+> The engine, the Terminal, the server and the app are upstream's, unchanged. What this fork adds, and how to deploy it on a Box,
+> is in [boxpilot/README.md](boxpilot/README.md). Everything below is upstream Strata's own README.
+
 <p align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="apps/host/public/brand/strata-lockup-dark.svg">

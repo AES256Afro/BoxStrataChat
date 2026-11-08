@@ -1,12 +1,14 @@
 name: Docker images
 
-# Builds the Strata container images of one release from its engine packages and pushes them to ghcr.io.
+# BoxStrataChat (AES256Afro's fork of Strata): builds the Strata container images of one UPSTREAM release from its signed engine
+# packages (docker/fetch-engines.py reads them from github.com/Niko1221/Strata/releases) and pushes them to this fork's registry.
+# The BoxPilot catalog manifest (boxpilot/strata.yaml) installs one of these images.
 # Run by hand only (Actions tab -> Docker images -> Run workflow). Nothing starts it on its own.
 #
 # For each flavor the job downloads the engine package from the release and checks it against the signed update feed
 # (docker/fetch-engines.py: the feed's Ed25519 signature, the archive's SHA-256, the manifest hash, the package signature,
 # every file's hash), builds the image with docker/build.sh and, only when "push" is on, pushes
-#   ghcr.io/niko1221/strata:<version>-<flavor>   and   ghcr.io/niko1221/strata:latest-<flavor>
+#   ghcr.io/aes256afro/boxstratachat:<version>-<flavor>   and   ghcr.io/aes256afro/boxstratachat:latest-<flavor>
 # The first run with "push" off builds everything without publishing it (a dry run).
 
 on:
@@ -41,7 +43,7 @@ permissions:
   contents: read
 
 env:
-  IMAGE: ghcr.io/niko1221/strata
+  IMAGE: ghcr.io/aes256afro/boxstratachat
 
 jobs:
   plan:
